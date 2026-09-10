@@ -1,0 +1,28 @@
+# =============================================================================
+# Copy this file to `inventory.yml` and fill in the wall address for your jFed
+# swap-in. `inventory.yml` is git-ignored so your node/user/key never get committed.
+#
+# This experiment is a single node: it clones benchmark-runner, builds the SpeCS
+# image, and runs the containment benchmark. There is no federation.
+#
+# Ansible parses the inventory before group_vars, so the SSH connection string
+# below cannot be templated -- keep the individual values in sync with
+# group_vars/all.yml.
+# =============================================================================
+
+all:
+  vars:
+    ansible_user: brtamuge
+    ansible_ssh_private_key_file: ~/.ssh/ilabt.pem
+    ansible_python_interpreter: /usr/bin/python3
+    # Bastion jump + agent forwarding (private-repo clone) + legacy SHA-1 host keys
+    # (some wall node images only offer ssh-rsa).
+    ansible_ssh_common_args: >-
+      -o ForwardAgent=yes -o ServerAliveInterval=120
+      -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
+      -o ProxyCommand="ssh -i ~/.ssh/ilabt.pem -W %h:%p fffbrtamuge@bastion.ilabt.imec.be"
+  children:
+    wall:
+      hosts:
+        runner-node:
+          ansible_host: nXXX-XXa.wall2.ilabt.iminds.be   # clones + builds + runs the benchmark

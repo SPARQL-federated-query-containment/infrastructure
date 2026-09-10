@@ -1,0 +1,11 @@
+inventory.yml
+inventory.ini
+
+# Pulled benchmark results
+results/
+
+# Ansible artifacts
+*.retry
+
+# Never commit private keys
+*.pem

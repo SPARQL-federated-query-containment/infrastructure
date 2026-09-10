@@ -1,0 +1,29 @@
+# Provision the single Virtual Wall node so the query-containment benchmark is
+# ready to run: base system + Docker + Bun, clone benchmark-runner (+submodules),
+# install dependencies, and build the SpeCS oracle image. You start the run
+# yourself, detached, with `make run`.
+- name: Provision the benchmark node
+  hosts: wall
+  gather_facts: true
+  tasks:
+    - name: "[1/7] Enable outbound IPv4 internet (NAT)"
+      ansible.builtin.include_tasks: tasks/enable_internet.yml
+      when: enable_nat | bool
+
+    - name: "[2/7] System setup and base dependencies"
+      ansible.builtin.include_tasks: tasks/system.yml
+
+    - name: "[3/7] Install Docker"
+      ansible.builtin.include_tasks: tasks/docker.yml
+
+    - name: "[4/7] Install Bun"
+      ansible.builtin.include_tasks: tasks/bun.yml
+
+    - name: "[5/7] Clone benchmark-runner (+submodules)"
+      ansible.builtin.include_tasks: tasks/clone.yml
+
+    - name: "[6/7] Install JavaScript dependencies (bun install)"
+      ansible.builtin.include_tasks: tasks/install.yml
+
+    - name: "[7/7] Build the SpeCS set-containment oracle image"
+      ansible.builtin.include_tasks: tasks/image.yml

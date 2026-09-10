@@ -1,0 +1,30 @@
+# Bun runs the benchmark-runner CLI and the solver workspace. Installed per-user
+# (no become) into ~/.bun so it lands on the login user's PATH -- every later task
+# that calls bun sets PATH explicitly rather than relying on ~/.bashrc, which a
+# non-interactive SSH session does not source.
+- name: Check whether Bun is installed
+  ansible.builtin.command: "{{ bun_install_dir }}/bin/bun --version"
+  register: bun_installed
+  changed_when: false
+  failed_when: false
+
+- name: Install Bun ({{ bun_version }})
+  ansible.builtin.shell: >-
+    set -eo pipefail;
+    curl -fsSL https://bun.sh/install | bash
+    {{ ('-s "bun-v' + bun_version + '"') if bun_version != 'latest' else '' }}
+  args:
+    executable: /bin/bash
+  environment:
+    BUN_INSTALL: "{{ bun_install_dir }}"
+  when: bun_installed.rc != 0
+  changed_when: true
+
+- name: Confirm Bun is available
+  ansible.builtin.command: "{{ bun_install_dir }}/bin/bun --version"
+  register: bun_version_out
+  changed_when: false
+
+- name: Report the Bun version
+  ansible.builtin.debug:
+    var: bun_version_out.stdout

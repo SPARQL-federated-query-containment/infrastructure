@@ -1,0 +1,11 @@
+# Runs as the login user (no become). Installs the root dependencies and the
+# `solver` path-workspace, so the submodule must already be checked out (clone.yml).
+- name: Install JavaScript dependencies (bun install)
+  ansible.builtin.command:
+    cmd: "{{ bun_install_dir }}/bin/bun install"
+    chdir: "{{ benchmark_dest }}"
+  environment:
+    PATH: "{{ bun_install_dir }}/bin:{{ ansible_env.PATH }}"
+    GIT_SSH_COMMAND: "ssh -o StrictHostKeyChecking=accept-new"
+  register: bun_install
+  changed_when: true

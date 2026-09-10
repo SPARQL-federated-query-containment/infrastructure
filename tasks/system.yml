@@ -1,0 +1,20 @@
+- name: Update apt cache and upgrade packages
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: dist
+  become: true
+
+- name: Install base build and archive tooling
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - pkg-config
+      - git
+      - curl
+      - wget
+      - make
+      - screen
+      - ca-certificates
+    state: present
+    update_cache: true
+  become: true

@@ -1,0 +1,40 @@
+---
+# =============================================================================
+# All tunable settings for the query-containment benchmark infrastructure live
+# here. Task files under tasks/ reference these variables only -- no literals.
+#
+# The Virtual Wall *connection* settings (bastion/user/PEM) below are documented
+# here; the actual host address and the SSH connection string live in
+# inventory.yml, because Ansible reads the inventory *before* group_vars and
+# therefore cannot template the connection string from here. See
+# inventory.yml.example for the mapping.
+# =============================================================================
+
+# --- Virtual Wall connection (mirror these in inventory.yml) -----------------
+wall_bastion_host: bastion.ilabt.imec.be
+wall_bastion_user: fffbrtamuge
+wall_ssh_user: brtamuge
+wall_pem_file: ~/.ssh/ilabt.pem
+
+# --- Testbed provisioning ----------------------------------------------------
+# Base URL that serves the imec Virtual Wall helper scripts.
+wall_scripts_base: https://www.wall2.ilabt.iminds.be
+# Enable outbound IPv4 via NAT (IPv6 is on by default but GitHub/Docker Hub are
+# effectively IPv4-only). Probed first; only run when the node has no outbound
+# IPv4. Re-applied every run -- it is not reboot-persistent.
+enable_nat: true
+
+# --- Experiment (cloned + bun-installed, then left ready for you to run) -----
+benchmark_repo: git@github.com:SPARQL-federated-query-containment/benchmark-runner.git
+benchmark_version: main
+benchmark_dest: "{{ ansible_env.HOME }}/benchmark-runner"
+
+# --- Toolchain -------------------------------------------------------------
+# Bun runs the runner and the solver workspace. "latest" installs the current
+# release; pin to e.g. "1.2.21" to freeze it (passed as the bun-v<x> tag).
+bun_version: latest
+bun_install_dir: "{{ ansible_env.HOME }}/.bun"
+
+# --- SpeCS set-containment oracle ------------------------------------------
+# Docker image tag built from solver/specs (via `bun run image`).
+specs_image: specs
