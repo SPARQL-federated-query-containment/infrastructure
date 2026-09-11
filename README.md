@@ -74,12 +74,17 @@ ssh-add ~/.ssh/id_ed25519     # GitHub key in the agent (the node clones the rep
 
 make ping            # 💻 connected, ~seconds  — node reachable
 make provision       # 💻 connected, ~10-15 min — system + Docker + Bun, clone
-                     #   benchmark-runner (+submodules), bun install, build the SpeCS image
+                     #   benchmark-runner (+submodules), bun install, build the SpeCS image.
+                     #   Re-running this always picks up whatever solver commit is currently
+                     #   pinned on benchmark-runner's main -- bump the solver submodule there
+                     #   and re-provision to put the latest solver on the wall.
 make smoke           # 💻 connected, minutes    — optional: 1-repetition sanity check,
                      #   prints correct / incorrect / unknown / error counts
 make run             # 💻 connected, ~minutes   — re-runs provision (idempotent: pulls
                      #   latest benchmark-runner + reinstalls), then launches -w 3 -r 20
-                     #   (both engines, all suites) DETACHED. ✅ You can disconnect once it starts.
+                     #   (both engines, all suites), 20 min per-pair timeout, 8192MB z3
+                     #   memory cap (sized for this node's 12GB), DETACHED. ✅ You can
+                     #   disconnect once it starts.
 
 make progress        # 💻 ~seconds  — non-blocking snapshot of ~/bench.log; repeat until done
 make run-status      # 💻 (blocks)  — live-follow the benchmark log (Ctrl-C to stop)
@@ -87,8 +92,9 @@ make results         # 💻 minutes   — scp the JSON reports to ./results/
 make stop            # stop the benchmark screen
 ```
 
-Override the run shape on the command line, e.g. `make run REPS=10 SUITE=correctness`
-or `make run ENGINE=bfc`.
+Override the run shape on the command line, e.g. `make run REPS=10 SUITE=correctness`,
+`make run ENGINE=bfc`, or `make run MEMORY=4096 TIMEOUT=600000` if you swap in a
+smaller node.
 
 ### When can the control session drop?
 

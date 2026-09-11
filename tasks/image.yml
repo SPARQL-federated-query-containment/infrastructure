@@ -1,18 +1,7 @@
-# `bun run image` is `docker build -t {{ specs_image }} solver/specs`. Build it now,
-# at provision time, so a broken image surfaces here rather than on the first timed
-# run (the runner would otherwise build it lazily on first use). Relies on the
-# `docker` group added in docker.yml, which is active after its reset_connection.
-- name: Check whether the SpeCS image already exists
-  ansible.builtin.command: "docker image inspect {{ specs_image }}"
-  register: specs_image_check
-  changed_when: false
-  failed_when: false
-
 - name: Build the SpeCS set-containment oracle image (bun run image)
   ansible.builtin.command:
     cmd: "{{ bun_install_dir }}/bin/bun run image"
     chdir: "{{ benchmark_dest }}"
   environment:
     PATH: "{{ bun_install_dir }}/bin:{{ ansible_env.PATH }}"
-  when: specs_image_check.rc != 0
   changed_when: true

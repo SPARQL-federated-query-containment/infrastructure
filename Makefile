@@ -6,6 +6,10 @@ WARMUP    ?= 3
 REPS      ?= 20
 ENGINE    ?= both
 SUITE     ?= all
+# runner-node has 12GB RAM (16 cores) -- 8192 leaves ~4GB headroom for the OS,
+# Docker, and the screen session while the solver runs sequentially.
+MEMORY    ?= 8192
+TIMEOUT   ?= 1200000
 
 # Connection settings for the single [wall] host, read straight from the inventory
 # -- the same source Ansible uses -- so the bastion jump, key, and user are defined
@@ -32,11 +36,11 @@ provision:   # System + Docker + Bun, clone benchmark-runner, bun install, build
 	ansible-playbook -i $(INVENTORY) playbook.yaml
 
 smoke:       # Synchronous 1-repetition sanity check (both engines, all suites)
-	$(SSH) $(HOST) 'cd benchmark-runner && ~/.bun/bin/bun run smoke'
+	$(SSH) $(HOST) 'cd benchmark-runner && ~/.bun/bin/bun run smoke -- --timeout $(TIMEOUT) --memory $(MEMORY)'
 
 run: provision  # Provision (idempotent -- pulls latest benchmark-runner + reinstalls), then launch the benchmark on the node, detached (survives laptop disconnect)
-	$(SSH) $(HOST) 'cd benchmark-runner && screen -dmS bench bash -lc "~/.bun/bin/bun src/run.ts -w $(WARMUP) -r $(REPS) --engine $(ENGINE) --suite $(SUITE) > ~/bench.log 2>&1"'
-	@echo "benchmark started on $(HOST) (screen: bench, -w $(WARMUP) -r $(REPS)). Watch: make run-status"
+	$(SSH) $(HOST) 'cd benchmark-runner && screen -dmS bench bash -lc "~/.bun/bin/bun src/run.ts -w $(WARMUP) -r $(REPS) --engine $(ENGINE) --suite $(SUITE) --timeout $(TIMEOUT) --memory $(MEMORY) > ~/bench.log 2>&1"'
+	@echo "benchmark started on $(HOST) (screen: bench, -w $(WARMUP) -r $(REPS), timeout $(TIMEOUT)ms, memory $(MEMORY)MB). Watch: make run-status"
 
 run-status:  # Follow the benchmark log (blocks; Ctrl-C is safe, the run keeps going)
 	$(SSH) $(HOST) 'tail -n 40 -f ~/bench.log'
