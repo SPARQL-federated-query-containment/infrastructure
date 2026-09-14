@@ -50,7 +50,7 @@ progress:    # Non-following snapshot of the benchmark log
 	$(SSH) $(HOST) 'tail -n 40 ~/bench.log 2>/dev/null || echo "(none yet)"'
 
 progress-live:  # Auto-refreshing snapshot, redrawn every 5s (read-only; Ctrl-C is safe, the run keeps going)
-	$(SSH) $(HOST) 'while true; do clear; tail -n 40 ~/bench.log 2>/dev/null || echo "(none yet)"; sleep 5; done'
+	$(SSH) $(HOST) 'while true; do printf "\033[2J\033[H"; tail -n 40 ~/bench.log 2>/dev/null || echo "(none yet)"; sleep 5; done'
 
 results:     # Pull the JSON reports from the node into ./results/
 	mkdir -p ./results
