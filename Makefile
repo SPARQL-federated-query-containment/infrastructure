@@ -25,7 +25,7 @@ SSH_ARGS := $(call inv,ansible_ssh_common_args)
 SSH      := ssh -i $(SSH_KEY) -l $(SSH_USER) $(SSH_ARGS)
 SCP      := scp -i $(SSH_KEY) $(SSH_ARGS)
 
-.PHONY: ping check provision smoke run run-status progress results stop ssh
+.PHONY: ping check provision smoke run run-status progress progress-live results stop ssh
 
 ping:        # Reachability of the node (bastion + agent + PEM)
 	ansible wall -i $(INVENTORY) -m ping
@@ -48,6 +48,9 @@ run-status:  # Follow the benchmark log (blocks; Ctrl-C is safe, the run keeps g
 
 progress:    # Non-following snapshot of the benchmark log
 	$(SSH) $(HOST) 'tail -n 40 ~/bench.log 2>/dev/null || echo "(none yet)"'
+
+progress-live:  # Auto-refreshing snapshot, redrawn every 5s (read-only; Ctrl-C is safe, the run keeps going)
+	$(SSH) $(HOST) 'while true; do clear; tail -n 40 ~/bench.log 2>/dev/null || echo "(none yet)"; sleep 5; done'
 
 results:     # Pull the JSON reports from the node into ./results/
 	mkdir -p ./results
